@@ -1,0 +1,37 @@
+{
+  "name": "jr-freight-map",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "next": "15.2.4",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@deck.gl/core": "^9.1.8",
+    "@deck.gl/layers": "^9.1.8",
+    "@deck.gl/mapbox": "^9.1.8",
+    "@deck.gl/react": "^9.1.8",
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
+    "@types/geojson": "^7946.0.16",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "deck.gl": "^9.1.8",
+    "eslint": "^9",
+    "eslint-config-next": "15.2.4",
+    "geojson": "^0.5.0",
+    "maplibre-gl": "^5.3.0",
+    "react-map-gl": "^8.0.2",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
