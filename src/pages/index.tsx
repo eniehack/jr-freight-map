@@ -50,7 +50,8 @@ export default function Home() {
         stroked: true,
         filled: false,
         lineWidthScale: 20,
-        lineWidthMinPixels: 2,
+        lineWidthMinPixels: 3,
+        lineWidthMaxPixels: 3,
         getLineColor: [255, 0, 0], // 赤色の線
         getLineWidth: 2,
       }),
@@ -63,6 +64,8 @@ export default function Home() {
         getText: (f: Feature<Point, StopGeoJsonProp>) => f.properties.stop_name,
         textCharacterSet: "auto",
         getPointRadius: 4,
+        pointRadiusMaxPixels: 5,
+        pointRadiusMinPixels: 5,
         filled: true,
         getFillColor: [0xff, 0xff, 0xff],
         getTextColor: [0xff, 0xff, 0xff],
