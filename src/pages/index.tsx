@@ -23,6 +23,9 @@ type StopGeoJsonProp = {
   stop_name: string;
   route_ids: string[];
 };
+type ShapeGeoJsonProp = {
+  shape_id: string
+}
 
 export default function Home() {
   const [stops, setStops] = useState<null | FeatureCollection<
@@ -31,7 +34,7 @@ export default function Home() {
   >>(null);
   const [routes, setRoutes] = useState<null | FeatureCollection<
     LineString,
-    { shape_id: string }
+    ShapeGeoJsonProp,
   >>(null);
 
   const layers = useMemo<LayersList>(() => {
@@ -41,7 +44,7 @@ export default function Home() {
     }
 
     layerArr.push(
-      new GeoJsonLayer<{ shape_id: string }>({
+      new GeoJsonLayer<ShapeGeoJsonProp>({
         id: "routes",
         data: routes,
         getText: (d) => d.properties.shape_id,
