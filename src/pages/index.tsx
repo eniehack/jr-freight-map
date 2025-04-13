@@ -61,8 +61,13 @@ export default function Home() {
       new GeoJsonLayer<StopGeoJsonProp>({
         id: "station",
         data: stops,
+        pointType: "circle+text",
         getText: (f: Feature<Point, StopGeoJsonProp>) => f.properties.stop_name,
         textCharacterSet: "auto",
+        textFontFamily: "Noto Sans JP",
+        getTextSize: 16,
+        getTextPixelOffset: [0, -3],
+        getTextAlignmentBaseline: 'bottom',
         getPointRadius: 4,
         pointRadiusMaxPixels: 5,
         pointRadiusMinPixels: 5,
