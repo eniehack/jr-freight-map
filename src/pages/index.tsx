@@ -7,8 +7,8 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import { useEffect, useMemo, useState } from "react";
 
 const INITIAL_VIEW_STATE: MapViewState = {
-  longitude: 139.767197,
-  latitude: 35.681143,
+  longitude: 139.80034,
+  latitude: 35.73272,
   zoom: 13,
 };
 
