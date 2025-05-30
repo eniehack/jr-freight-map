@@ -1,11 +1,17 @@
 import { MapViewState, DeckProps, LayersList, PickingInfo } from "@deck.gl/core";
 import { MapboxOverlay } from "@deck.gl/mapbox";
-import { Map, useControl } from "react-map-gl/maplibre";
+import { Map, useControl, AttributionControl } from "react-map-gl/maplibre";
 import { GeoJsonLayer } from "@deck.gl/layers";
 import { TripsLayer } from "@deck.gl/geo-layers";
 import type { Feature, Point } from "geojson";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 const INITIAL_VIEW_STATE: MapViewState = {
   longitude: 139.80034,
@@ -33,12 +39,16 @@ type StopTimesJson = {
 };
 
 export default function MapComponent() {
-  const [timestamp, setTimestamp] = useState<number>(40200);
+  const [timestamp, setTimestamp] = useState<number>(0);
   const [timeSpeed, setTimeSpeed] = useState<number>(2);
 
   const getTooltip = useCallback(({ object }: PickingInfo<StopTimesJson>) => {
     return object ? `${object.dpt} - ${object.dst}` : null;
   }, []);
+
+  const humanizedTime = useMemo(() => {
+    return dayjs.unix(timestamp).subtract(9, "hours").format("HH:mm:ss");
+  }, [timestamp]);
 
   const layers = useMemo<LayersList>(() => {
     const layerArr = [];
@@ -121,14 +131,21 @@ export default function MapComponent() {
           reuseMaps
           id="map"
         >
+          <AttributionControl compact={true} customAttribution="© JR貨物・国土交通省・公共交通オープンデータ協議会" />
           <DeckGLOverlay controller layers={layers} getTooltip={getTooltip} />
         </Map>
       </div>
       <div className="absolute bottom-2 left-1 bg-white">
         <p>
-          時間:<span>{timestamp}</span>
+          時刻: <span>{humanizedTime}</span>
         </p>
-        <input type="number" value={timeSpeed} onChange={(event) => setTimeSpeed(Number(event.target.value))}></input>
+        <input
+          name="timespeed"
+          type="number"
+          value={timeSpeed}
+          onChange={(event) => setTimeSpeed(Number(event.target.value))}
+        ></input>
+        <label htmlFor="timespeed">倍速</label>
       </div>
     </>
   );
