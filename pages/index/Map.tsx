@@ -36,7 +36,7 @@ type StopTimesJson = {
   dst: string;
 };
 
-export default function Home() {
+export default function MapComponent() {
   const [timestamp, setTimestamp] = useState<number>(40200);
   const [timeSpeed, setTimeSpeed] = useState<number>(2);
 
@@ -70,7 +70,7 @@ export default function Home() {
     layerArr.push(
       new GeoJsonLayer<StopGeoJsonProp>({
         id: "station",
-        data: `${import.meta.env.BASE_URL}/data/stops.json`,
+        data: `${import.meta.env.BASE_URL}stops.json`,
         pointType: "circle+text",
         getText: (f: Feature<Point, StopGeoJsonProp>) => f.properties.stop_name,
         textCharacterSet: "auto",
@@ -90,7 +90,7 @@ export default function Home() {
     layerArr.push(
       new TripsLayer<StopTimesJson>({
         id: "trips",
-        data: `${import.meta.env.BASE_URL}/data/stop_times.json`,
+        data: `${import.meta.env.BASE_URL}stop_times.json`,
         getPath: (d: StopTimesJson) => d.c,
         getTimestamps: (d: StopTimesJson) => d.ts,
         opacity: 0.6,
@@ -116,22 +116,24 @@ export default function Home() {
   }, [timeSpeed]);
 
   return (
-    <main className="absolute h-full w-full top-0 left-0">
-      <Map
-        initialViewState={INITIAL_VIEW_STATE}
-        //mapStyle="https://tile.openstreetmap.jp/styles/osm-bright-ja/style.json"
-        mapStyle="https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"
-        reuseMaps
-        id="map"
-      >
-        <DeckGLOverlay controller layers={layers} getTooltip={getTooltip} />
-      </Map>
-      <div className="absolute bottom-2 left-1">
+    <>
+      <div className="absolute h-full w-full top-0 left-0">
+        <Map
+          initialViewState={INITIAL_VIEW_STATE}
+          //mapStyle="https://tile.openstreetmap.jp/styles/osm-bright-ja/style.json"
+          mapStyle="https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"
+          reuseMaps
+          id="map"
+        >
+          <DeckGLOverlay controller layers={layers} getTooltip={getTooltip} />
+        </Map>
+      </div>
+      <div className="absolute bottom-2 left-1 bg-white">
         <p>
           時間:<span>{timestamp}</span>
         </p>
         <input type="number" value={timeSpeed} onChange={(event) => setTimeSpeed(Number(event.target.value))}></input>
       </div>
-    </main>
+    </>
   );
 }

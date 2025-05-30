@@ -2,11 +2,12 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: ['trunk']
+    branches: ["trunk"]
+  workflow_dispatch:
 
 env:
-  ARTIFACT_DIR: 'out'
-  BASE_PATH: '/jr-freight-map'
+  ARTIFACT_DIR: "dist"
+  BASE_PATH: "/jr-freight-map"
 
 jobs:
   build_site:
@@ -34,7 +35,7 @@ jobs:
         env:
           BASE_PATH: ${{ env.BASE_PATH }}
         run: |
-          pnpm run build
+          pnpm run build:prod
           touch $ARTIFACT_DIR/.nojekyll
 
       - name: Upload Artifacts

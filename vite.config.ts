@@ -5,7 +5,7 @@ import vike from "vike/plugin";
 
 export default defineConfig({
   plugins: [vike(), react({}), tailwindcss()],
-  base: process.env.production ? "/jr-freight-map/" : "/",
+  base: process.env.MODE === "production" ? "/jr-freight-map/" : "/",
   build: {
     target: "es2022",
   },
