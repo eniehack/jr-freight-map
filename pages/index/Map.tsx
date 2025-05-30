@@ -3,7 +3,7 @@ import { MapboxOverlay } from "@deck.gl/mapbox";
 import { Map, useControl } from "react-map-gl/maplibre";
 import { GeoJsonLayer } from "@deck.gl/layers";
 import { TripsLayer } from "@deck.gl/geo-layers";
-import type { Feature, FeatureCollection, Point, LineString } from "geojson";
+import type { Feature, Point } from "geojson";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -23,10 +23,6 @@ type StopGeoJsonProp = {
   stop_id: string;
   stop_name: string;
   route_ids: string[];
-};
-
-type ShapeGeoJsonProp = {
-  shape_id: string;
 };
 
 type StopTimesJson = {
