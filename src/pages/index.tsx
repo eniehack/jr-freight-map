@@ -42,10 +42,6 @@ type StopTimesJson = {
 };
 
 export default function Home() {
-  const [routes, setRoutes] = useState<null | FeatureCollection<
-    LineString,
-    ShapeGeoJsonProp
-  >>(null);
   const [timestamp, setTimestamp] = useState<number>(40200);
 
   const getTooltip = useCallback(({ object }: PickingInfo<StopTimesJson>) => {
@@ -54,15 +50,12 @@ export default function Home() {
 
   const layers = useMemo<LayersList>(() => {
     const layerArr = [];
-    if (routes === null) {
-      return [];
-    }
 
     /*
     layerArr.push(
       new GeoJsonLayer<ShapeGeoJsonProp>({
         id: "routes",
-        data: routes,
+        data: "/data/shapes.json",
         getText: (d) => d.properties.shape_id,
         getTextColor: [0xff, 0xff, 0xff],
         pickable: true,
@@ -115,19 +108,9 @@ export default function Home() {
     );
 
     return layerArr;
-  }, [timestamp, routes]);
-
-  const loadRoutes = async () => {
-    const resp = await fetch("/data/shapes.json");
-    const json = await resp.json();
-    setRoutes(json);
-  };
+  }, [timestamp]);
 
   useEffect(() => {
-    Promise.all([loadRoutes()]).catch((e) =>
-      console.error("cannot load data:", e),
-    );
-
     const timer = setInterval(() => {
       setTimestamp((prev) => prev + 1);
     }, 200);
