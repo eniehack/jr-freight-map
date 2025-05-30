@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 env:
-  ARTIFACT_DIR: "dist"
+  ARTIFACT_DIR: "dist/client"
   BASE_PATH: "/jr-freight-map"
 
 jobs:
