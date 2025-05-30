@@ -9,5 +9,34 @@
 #   generate-hashes: false
 
 -e file:.
+certifi==2025.4.26
+    # via pyogrio
+    # via pyproj
 duckdb==1.2.2
     # via scripts
+geopandas==1.0.1
+    # via scripts
+numpy==2.2.6
+    # via geopandas
+    # via pandas
+    # via pyogrio
+    # via shapely
+packaging==25.0
+    # via geopandas
+    # via pyogrio
+pandas==2.2.3
+    # via geopandas
+pyogrio==0.11.0
+    # via geopandas
+pyproj==3.7.1
+    # via geopandas
+python-dateutil==2.9.0.post0
+    # via pandas
+pytz==2025.2
+    # via pandas
+shapely==2.1.1
+    # via geopandas
+six==1.17.0
+    # via python-dateutil
+tzdata==2025.2
+    # via pandas

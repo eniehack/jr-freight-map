@@ -7,6 +7,7 @@ authors = [
 ]
 dependencies = [
     "duckdb>=1.2.2",
+    "geopandas>=1.0.1",
 ]
 readme = "README.md"
 requires-python = ">= 3.8"
