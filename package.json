@@ -8,7 +8,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "prettier . --check && eslint .",
-    "format": "prettier . --write && eslint --fix ."
+    "format": "prettier . --write && eslint --fix .",
+    "build:prod": "next build && next export"
   },
   "dependencies": {
     "@deck.gl/geo-layers": "^9.1.12",
