@@ -1,4 +1,5 @@
 # Ignore artifacts:
 scripts
 assets
+public
 pnpm-lock.yaml
