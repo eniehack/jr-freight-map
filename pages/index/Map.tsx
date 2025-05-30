@@ -114,9 +114,13 @@ export default function MapComponent() {
   }, [timestamp]);
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setTimestamp((prev) => prev + 1);
-    }, 1000 / timeSpeed);
+    const timer = setInterval(
+      () => {
+        if (timeSpeed === 0) return;
+        setTimestamp((prev) => prev + 1);
+      },
+      1000 / (timeSpeed === 0 ? 2 : timeSpeed),
+    );
 
     return () => clearInterval(timer);
   }, [timeSpeed]);
