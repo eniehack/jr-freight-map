@@ -4,35 +4,36 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build",
-    "start": "next start",
+    "dev": "vike dev",
+    "build": "vike build",
+    "preview": "vike preview",
     "lint": "prettier . --check && eslint .",
     "format": "prettier . --write && eslint --fix ."
   },
   "dependencies": {
-    "@deck.gl/geo-layers": "^9.1.12",
-    "next": "15.2.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
     "@deck.gl/core": "^9.1.8",
+    "@deck.gl/geo-layers": "^9.1.12",
     "@deck.gl/layers": "^9.1.8",
     "@deck.gl/mapbox": "^9.1.8",
     "@deck.gl/react": "^9.1.8",
     "@eslint/eslintrc": "^3",
     "@eslint/js": "^9.24.0",
     "@next/eslint-plugin-next": "^15.3.0",
-    "@tailwindcss/postcss": "^4",
+    "@tailwindcss/vite": "^4.1.7",
     "@types/geojson": "^7946.0.16",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^4.5.0",
+    "@vitejs/plugin-react-swc": "^3.10.0",
     "deck.gl": "^9.1.8",
     "eslint": "^9",
-    "eslint-config-next": "15.2.4",
     "eslint-config-prettier": "^10.1.2",
+    "eslint-plugin-prettier": "^5.2.6",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
     "geojson": "^0.5.0",
@@ -42,6 +43,14 @@
     "react-map-gl": "^8.0.2",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "typescript-eslint": "^8.29.1"
+    "typescript-eslint": "^8.29.1",
+    "vike": "^0.4.230",
+    "vike-react": "^0.6.3",
+    "vite": "^6.3.5"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@swc/core"
+    ]
   }
 }

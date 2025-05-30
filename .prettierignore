@@ -1,4 +1,4 @@
 # Ignore artifacts:
-.next
 scripts
-public
+assets
+pnpm-lock.yaml

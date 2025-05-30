@@ -1,9 +1,4 @@
-import {
-  MapViewState,
-  DeckProps,
-  LayersList,
-  PickingInfo,
-} from "@deck.gl/core";
+import { MapViewState, DeckProps, LayersList, PickingInfo } from "@deck.gl/core";
 import { MapboxOverlay } from "@deck.gl/mapbox";
 import { Map, useControl } from "react-map-gl/maplibre";
 import { GeoJsonLayer } from "@deck.gl/layers";
@@ -43,6 +38,7 @@ type StopTimesJson = {
 
 export default function Home() {
   const [timestamp, setTimestamp] = useState<number>(40200);
+  const [timeSpeed, setTimeSpeed] = useState<number>(2);
 
   const getTooltip = useCallback(({ object }: PickingInfo<StopTimesJson>) => {
     return object ? `${object.dpt} - ${object.dst}` : null;
@@ -66,6 +62,7 @@ export default function Home() {
         lineWidthMaxPixels: 3,
         getLineColor: [255, 0, 0], // 赤色の線
         getLineWidth: 2,
+        opacity: 0.15,
       }),
     );
     */
@@ -73,7 +70,7 @@ export default function Home() {
     layerArr.push(
       new GeoJsonLayer<StopGeoJsonProp>({
         id: "station",
-        data: "/data/stops.json",
+        data: `${import.meta.env.BASE_URL}/data/stops.json`,
         pointType: "circle+text",
         getText: (f: Feature<Point, StopGeoJsonProp>) => f.properties.stop_name,
         textCharacterSet: "auto",
@@ -93,7 +90,7 @@ export default function Home() {
     layerArr.push(
       new TripsLayer<StopTimesJson>({
         id: "trips",
-        data: "/data/stop_times.json",
+        data: `${import.meta.env.BASE_URL}/data/stop_times.json`,
         getPath: (d: StopTimesJson) => d.c,
         getTimestamps: (d: StopTimesJson) => d.ts,
         opacity: 0.6,
@@ -113,14 +110,13 @@ export default function Home() {
   useEffect(() => {
     const timer = setInterval(() => {
       setTimestamp((prev) => prev + 1);
-    }, 200);
+    }, 1000 / timeSpeed);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [timeSpeed]);
 
   return (
     <main className="absolute h-full w-full top-0 left-0">
-      <p>{timestamp}</p>
       <Map
         initialViewState={INITIAL_VIEW_STATE}
         //mapStyle="https://tile.openstreetmap.jp/styles/osm-bright-ja/style.json"
@@ -130,6 +126,12 @@ export default function Home() {
       >
         <DeckGLOverlay controller layers={layers} getTooltip={getTooltip} />
       </Map>
+      <div className="absolute bottom-2 left-1">
+        <p>
+          時間:<span>{timestamp}</span>
+        </p>
+        <input type="number" value={timeSpeed} onChange={(event) => setTimeSpeed(Number(event.target.value))}></input>
+      </div>
     </main>
   );
 }
