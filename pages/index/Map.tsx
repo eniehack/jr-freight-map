@@ -129,9 +129,13 @@ export default function MapComponent() {
           //mapStyle="https://tile.openstreetmap.jp/styles/osm-bright-ja/style.json"
           mapStyle="https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"
           reuseMaps
+          attributionControl={false}
           id="map"
         >
-          <AttributionControl compact={true} customAttribution="© JR貨物・国土交通省・公共交通オープンデータ協議会" />
+          <AttributionControl
+            compact={true}
+            customAttribution="© <a href='https://ckan.odpt.org/dataset/jrfreight_container'>JR貨物・国土交通省・公共交通オープンデータ協議会</a>"
+          />
           <DeckGLOverlay controller layers={layers} getTooltip={getTooltip} />
         </Map>
       </div>
