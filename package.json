@@ -6,7 +6,6 @@
   "scripts": {
     "dev": "vike dev",
     "build": "vike build",
-    "build:prod": "NODE_ENV=production vike build",
     "preview": "vike preview",
     "lint": "prettier . --check && eslint .",
     "format": "prettier . --write && eslint --fix ."

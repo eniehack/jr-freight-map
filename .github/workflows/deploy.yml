@@ -35,7 +35,7 @@ jobs:
         env:
           BASE_PATH: ${{ env.BASE_PATH }}
         run: |
-          pnpm run build:prod
+          pnpm run build
           touch $ARTIFACT_DIR/.nojekyll
 
       - name: Upload Artifacts
