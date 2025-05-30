@@ -6,6 +6,8 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  output: "export",
+  basePath: "/jr-freight-map"
 };
 
 export default nextConfig;
