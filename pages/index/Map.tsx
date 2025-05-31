@@ -25,18 +25,18 @@ const DeckGLOverlay = (props: DeckProps) => {
   return null;
 };
 
-type StopGeoJsonProp = {
+interface StopGeoJsonProp {
   stop_id: string;
   stop_name: string;
   route_ids: string[];
-};
+}
 
-type StopTimesJson = {
+interface StopTimesJson {
   ts: number[];
   c: [number, number][];
   dpt: string;
   dst: string;
-};
+}
 
 export default function MapComponent() {
   const [timestamp, setTimestamp] = useState<number>(0);
@@ -145,7 +145,10 @@ export default function MapComponent() {
       </div>
       <div className="absolute bottom-2 left-1 bg-white">
         <p>
-          時刻: <span>{humanizedTime}</span>
+          時刻:{" "}
+          <span>
+            {humanizedTime}({timestamp})
+          </span>
         </p>
         <input
           name="timespeed"
