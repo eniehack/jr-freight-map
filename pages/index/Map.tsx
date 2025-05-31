@@ -16,7 +16,7 @@ dayjs.extend(timezone);
 const INITIAL_VIEW_STATE: MapViewState = {
   longitude: 139.80034,
   latitude: 35.73272,
-  zoom: 13,
+  zoom: 5,
 };
 
 const DeckGLOverlay = (props: DeckProps) => {
