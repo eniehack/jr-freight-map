@@ -1,14 +1,17 @@
 import eslint from "@eslint/js";
 import prettier from "eslint-plugin-prettier/recommended";
 import react from "eslint-plugin-react";
+import reactHooks from "eslint-plugin-react-hooks";
 import globals from "globals";
-import tseslint from "typescript-eslint";
+import ts from "typescript-eslint";
 
-export default tseslint.config(
+export default [
   {
     ignores: [
       "dist/*",
       "scripts/*",
+      "public/*",
+      "assets/*",
       // Temporary compiled files
       "**/*.ts.build-*.mjs",
 
@@ -19,13 +22,16 @@ export default tseslint.config(
     ],
   },
   eslint.configs.recommended,
-  ...tseslint.configs.recommended,
+  ...ts.configs.recommendedTypeChecked,
+  ...ts.configs.stylisticTypeChecked,
   {
     languageOptions: {
       parserOptions: {
         warnOnUnsupportedTypeScriptVersion: false,
         sourceType: "module",
         ecmaVersion: "latest",
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
       },
     },
   },
@@ -44,12 +50,14 @@ export default tseslint.config(
   {
     files: ["**/*.{js,mjs,cjs,jsx,mjsx,ts,tsx,mtsx}"],
     ...react.configs.flat.recommended,
+    ...reactHooks.configs["recommended-latest"],
     languageOptions: {
       ...react.configs.flat.recommended.languageOptions,
       globals: {
         ...globals.serviceworker,
         ...globals.browser,
       },
+      parser: ts.parser,
     },
 
     settings: {
@@ -62,4 +70,4 @@ export default tseslint.config(
   react.configs.flat["jsx-runtime"],
 
   prettier,
-);
+];
