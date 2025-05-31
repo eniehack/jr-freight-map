@@ -3,11 +3,7 @@ import argparse
 from pathlib import Path
 import duckdb
 
-def generate_shapejson(conn: duckdb.DuckDBPyConnection, shapes_txt_path: Path) -> dict:
-    conn.install_extension("spatial")
-    conn.load_extension("spatial")
-    conn.execute("CREATE TABLE shapes_raw AS SELECT shape_id, shape_pt_sequence, st_point(shape_pt_lon, shape_pt_lat) as point FROM read_csv(?, header=true);", [str(shapes_txt_path)])
-    conn.execute("CREATE TABLE shapes AS SELECT shape_id, st_makeline(list(point ORDER BY shape_pt_sequence ASC)) as line FROM shapes_raw GROUP BY shape_id;")
+def generate_shapejson(conn: duckdb.DuckDBPyConnection) -> dict:
     shapes = conn.execute("SELECT shape_id, st_asgeojson(line) FROM shapes;").fetchall()
 
     geojson_root = {"type": "FeatureCollection", "features": []}

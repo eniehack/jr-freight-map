@@ -38,5 +38,7 @@ shapely==2.1.1
     # via geopandas
 six==1.17.0
     # via python-dateutil
+tqdm==4.67.1
+    # via scripts
 tzdata==2025.2
     # via pandas
