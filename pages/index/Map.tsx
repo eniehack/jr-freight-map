@@ -130,8 +130,8 @@ export default function MapComponent() {
       <div className="absolute h-full w-full top-0 left-0">
         <Map
           initialViewState={INITIAL_VIEW_STATE}
-          //mapStyle="https://tile.openstreetmap.jp/styles/osm-bright-ja/style.json"
-          mapStyle="https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"
+          mapStyle={`${import.meta.env.BASE_URL}style.json`}
+          //mapStyle="https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"
           reuseMaps
           attributionControl={false}
           id="map"
