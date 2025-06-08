@@ -21,10 +21,9 @@
     "maputnik:renderer": "mlgljs"
   },
   "sources": {
-    "openmaptiles": {
-      "type": "vector",
-      "url": "https://api.maptiler.com/tiles/v3-openmaptiles/tiles.json?key=get_your_own_OpIi9ZULNHzrESv6T2vL"
-    }
+		"openmaptiles": { "type": "vector", "url": "https://tile.openstreetmap.jp/data/planet.json" },
+		"takeshima": { "type": "vector", "url": "https://tile.openstreetmap.jp/data/takeshima.json" },
+		"hoppo": { "type": "vector", "url": "https://tile.openstreetmap.jp/data/hoppo.json" }
   },
   "sprite": "https://openmaptiles.github.io/dark-matter-gl-style/sprite",
   "glyphs": "https://tile.openstreetmap.jp/fonts/{fontstack}/{range}.pbf",
