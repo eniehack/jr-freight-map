@@ -63,14 +63,11 @@ def get_boundary_timestamps(min_ts: int, max_ts: int) -> tuple[list[int], list[i
         before_boundaries.append(boundary - 1)
     return before_boundaries, after_boundaries
 
-def generate_stoptimesjson(conn: duckdb.DuckDBPyConnection) -> tuple[dict, list[StopTimeListItem]]:
+def generate_stop_geojson(conn: duckdb.DuckDBPyConnection) -> dict:
     coords = conn.execute("SELECT s.stop_name, st_asgeojson(s.coord), s.stop_id FROM stops AS s;").fetchall()
-    #stop_times = conn.execute("SELECT st.trip_id, st.arrival_time, st.departure_time, st_asgeojson(s.coord), st.stop_sequence, st.shape_id FROM stop_times;").fetchall()
-    shapes = conn.execute("SELECT shape_id, st_asgeojson(coord),shape_pt_sequence FROM shapes;").fetchall()
-
     stop_geojson_root = {"type": "FeatureCollection", "features": []}
     for s in coords:
-        geom = json.loads(s[1])
+        geom = load_str_as_geojson(s[1])
         geojson = {
             'type': 'Feature',
             'geometry': geom,
@@ -80,10 +77,15 @@ def generate_stoptimesjson(conn: duckdb.DuckDBPyConnection) -> tuple[dict, list[
             }
         }
         stop_geojson_root['features'].append(geojson)
+    return stop_geojson_root
+
+def generate_stoptimesjson(conn: duckdb.DuckDBPyConnection) -> list[StopTimeListItem]:
+    #stop_times = conn.execute("SELECT st.trip_id, st.arrival_time, st.departure_time, st_asgeojson(s.coord), st.stop_sequence, st.shape_id FROM stop_times;").fetchall()
+    shapes = conn.execute("SELECT shape_id, st_asgeojson(coord), shape_pt_sequence FROM shapes;").fetchall()
 
     shapes_dict: defaultdict[str, list[ShapeItem]] = defaultdict(list)
     for row in shapes:
-        coord = json.loads(row[1])
+        coord = load_str_as_geojson(row[1])
         shapes_dict[row[0]].append({
             "coord": coord['coordinates'],
             "timestamp": None,
@@ -147,36 +149,6 @@ def generate_stoptimesjson(conn: duckdb.DuckDBPyConnection) -> tuple[dict, list[
                 if 1 <= len(splitted_gdf):
                     splitted_gdf.loc[:, 'timestamp'] = splitted_gdf['timestamp'] % boundary
                     stoptime_dict.append(StopTimeListItem(ts=[int(ts) for ts in splitted_gdf['timestamp']], c=[tuple(p.coords[0]) for p in splitted_gdf['geometry']], dpt=dept, dst=dest))
-        #stoptime_dict.append(StopTimeListItem(ts=[int(ts) for ts in merged_gdf['timestamp']], c=[tuple(p.coords[0]) for p in merged_gdf['geometry']], dpt=dept, dst=dest))
+def load_str_as_geojson(s: str) -> dict:
+    return json.loads(s)
 
-    #collect_stoptime_dict: defaultdict[str, list[StopTimeValue]] = defaultdict(list)
-    #for row in stop_times:
-    #    stop_geom = json.loads(row[3])
-    #    collect_stoptime_dict[row[0]].append({
-    #        "arr": int(parse_extended_time(BASE_DATE, row[1]).timestamp()) - BASE_TS if row[1] is not None else None,
-    #        "dept": int(parse_extended_time(BASE_DATE, row[2]).timestamp()) - BASE_TS if row[2] is not None else None,
-    #        "coords": stop_geom['coordinates'],
-    #        "seq": int(row[4]),
-    #        "stop": row[5],
-    #    })
-    
-    #stoptime_dict: list[StopTimeListItem] = []
-    #for _, v in collect_stoptime_dict.items():
-    #    times = []
-    #    coords = []
-    #    val = sorted(v, key=lambda x: x["seq"])
-    #    dept = val[0]['stop']
-    #    dest = val[-1]['stop']
-    #    for i in range(len(val)):
-    #        times.append(val[i]["arr"])
-    #        coords.append(val[i]["coords"])
-    #    linestring = LineString(coords)
-    #    gdf = geopandas.GeoDataFrame({
-    #        "geometry": [Point(c) for c in coords],
-    #        'timestamp': times,
-    #    })
-    #    gdf['distance'] = [linestring.project(p) for p in gdf.geometry]
-    #    gdf['timestamp'] = gdf['timestamp'].interpolate(method='linear')
-    #    stoptime_dict.append(StopTimeListItem(ts=[int(ts) for ts in gdf['timestamp']], c=[tuple(p.coords[0]) for p in gdf['geometry']], dpt=dept, dst=dest))
-
-    return (stop_geojson_root, stoptime_dict)
