@@ -15,11 +15,11 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "@deck.gl/core": "^9.1.8",
-    "@deck.gl/geo-layers": "^9.1.12",
-    "@deck.gl/layers": "^9.1.8",
-    "@deck.gl/mapbox": "^9.1.8",
-    "@deck.gl/react": "^9.1.8",
+    "@deck.gl/core": "^9.2.8",
+    "@deck.gl/geo-layers": "^9.2.8",
+    "@deck.gl/layers": "^9.2.8",
+    "@deck.gl/mapbox": "^9.2.8",
+    "@deck.gl/react": "^9.2.8",
     "@eslint/eslintrc": "^3",
     "@eslint/js": "^9.24.0",
     "@next/eslint-plugin-next": "^15.3.0",
