@@ -1,14 +1,16 @@
 import sys
-from collections import defaultdict
+from collections import defaultdict, deque
 from pathlib import Path
 from datetime import datetime, timedelta
 import json
 from typing import TypedDict
 import geopandas
-from shapely.geometry import LineString, Point
 import shapely
+from shapely.geometry import LineString, Point
+from shapely.geometry.base import BaseGeometry
 from tqdm import tqdm
 import pandas as pd
+
 
 import duckdb
 
@@ -20,13 +22,14 @@ class StopTimeValue(TypedDict):
     seq: int
 
 class StopTimeListItem(TypedDict):
+    id: str
     ts: list[int] # timestamp
     c: list[tuple[float, float]]
     dpt: str
     dst: str
 
 class ShapeItem(TypedDict):
-    coord: tuple[float, float]
+    coord: str
     timestamp: int | None
     seq: int
     stop: str | None
@@ -80,47 +83,106 @@ def generate_stop_geojson(conn: duckdb.DuckDBPyConnection) -> dict:
     return stop_geojson_root
 
 def generate_stoptimesjson(conn: duckdb.DuckDBPyConnection) -> list[StopTimeListItem]:
-    #stop_times = conn.execute("SELECT st.trip_id, st.arrival_time, st.departure_time, st_asgeojson(s.coord), st.stop_sequence, st.shape_id FROM stop_times;").fetchall()
-    shapes = conn.execute("SELECT shape_id, st_asgeojson(coord), shape_pt_sequence FROM shapes;").fetchall()
-
     shapes_dict: defaultdict[str, list[ShapeItem]] = defaultdict(list)
-    for row in shapes:
-        coord = load_str_as_geojson(row[1])
-        shapes_dict[row[0]].append({
-            "coord": coord['coordinates'],
-            "timestamp": None,
-            "seq": row[2],
-            "stop": None,
-        })
-    for k, v in shapes_dict.items():
-        shapes_dict[k] = sorted(v, key=lambda x: x['seq'])
-    
+    total_shapes = conn.execute("SELECT COUNT(DISTINCT shape_id) FROM shapes").fetchone() # tqdmで進捗率を出すためにshapeの数を数えておく
+    # shapeには被っている部分がある（e.g.東京-北旭川は途中まで東京-札幌の一部として運行される）ため、被っている部分をmerge（片寄せ）する処理
+    with tqdm(total=total_shapes[0], desc="[merging shapes]", file=sys.stderr) as pbar:
+        root_shapes: list[tuple[str, int]] = conn.execute(
+            """
+            SELECT DISTINCT component_shape_id, seq
+            FROM composite_shapes
+            WHERE REGEXP_MATCHES(component_shape_id, '^\\d+_\\d+_\\d+$');
+            """).fetchall()
+        shapes_stack: deque[tuple[str, str, int]] = deque() # idと親のid,親の最後のseqのtuple
+        for root_shape_id, _ in root_shapes:
+            shps: list[tuple[str, int]] = conn.execute(
+                "SELECT st_astext(coord), shape_pt_sequence FROM shapes WHERE shape_id = ? ORDER BY shape_pt_sequence;",
+                [root_shape_id]
+            ).fetchall()
+            for sh in shps:
+                shapes_dict[root_shape_id].append({
+                    "coord": sh[0],
+                    "seq": sh[1],
+                    "timestamp": None,
+                    "stop": None,
+                })
+            children = conn.execute(
+                """
+                SELECT DISTINCT shape_id
+                FROM composite_shapes
+                WHERE REGEXP_MATCHES(shape_id, '^' || ? || '_\\d+_\\d+$');
+                """,
+                [root_shape_id]
+            ).fetchall()
+            for child in children:
+                shapes_stack.append((child[0], root_shape_id, shps[-1][1]))
+            pbar.update(1) # whileを使うと自動でやってくれないのでtqdmの進捗率を更新する
+
+        while 0 < len(shapes_stack):
+            current_shape_id, parent_shape_id, parent_shape_last_seq_index = shapes_stack.pop()
+            splitted_shape: list[tuple[str, int]] = conn.execute(
+                """
+                SELECT st_astext(coord), shape_pt_sequence
+                FROM shapes
+                WHERE shape_id = ?
+                  AND ? <= shape_pt_sequence
+                ORDER BY shape_pt_sequence;
+                """,
+                [current_shape_id, parent_shape_last_seq_index]
+            ).fetchall()
+            for sh in splitted_shape:
+                shapes_dict[current_shape_id].append({
+                    "coord": sh[0],
+                    "seq": sh[1],
+                    "timestamp": None,
+                    "stop": None,
+                })
+
+            if 0 < len(splitted_shape):
+                children: list[tuple[str]] = conn.execute(
+                    "SELECT DISTINCT shape_id FROM composite_shapes WHERE REGEXP_MATCHES(shape_id, '^' || ? || '_\\d+_\\d+$');",
+                    [current_shape_id]
+                ).fetchall()
+                for child in children:
+                    child_shape_id = child[0]
+                    shapes_stack.append((child_shape_id, current_shape_id, splitted_shape[-1][1]))
+            pbar.update(1)
+    print(shapes_dict)
+
     # 駅番号と到着時間をshapeの位置情報と繋ぎ合わせる
     for k, v in tqdm(shapes_dict.items(), "[shape_dict]", file=sys.stderr):
         for val in v:
-            res = conn.execute(
-                "SELECT s.stop_name, st.arrival_time, st.departure_time FROM trips t JOIN stop_times st ON st.trip_id = t.trip_id JOIN stops s ON s.stop_id = st.stop_id WHERE t.shape_id = ? AND s.coord = st_point(?, ?);",
-                [k, val['coord'][0], val['coord'][1]]
-            )
-            row = res.fetchall()
+            row = conn.execute(
+                """
+                SELECT s.stop_name, st.arrival_time, st.departure_time
+                FROM trips t 
+                JOIN stop_times st
+                  ON st.trip_id = t.trip_id
+                JOIN stops s ON s.stop_id = st.stop_id
+                WHERE t.shape_id = ?
+                  AND s.coord = st_geomfromtext(?);
+                """,
+                [k, val['coord']]
+            ).fetchall()
             if len(row) < 1:
                 continue
             row = row[-1]
             val["timestamp"] = int(parse_extended_time(BASE_DATE, row[2]).timestamp()) - BASE_TS if row[2] is not None else None
             val['stop'] = row[0]
+    print(shapes_dict)
     
     stoptime_dict: list[StopTimeListItem] = []
-    for k, v in tqdm(shapes_dict.items(), "[stoptime_dict]", file=sys.stderr):
+    for k, l in tqdm(shapes_dict.items(), "[stoptime_dict]", file=sys.stderr):
         times = []
-        coords = []
-        dept = v[0]['stop']
-        dest = v[-1]['stop']
-        for i in range(len(v)):
-            times.append(v[i]["timestamp"])
-            coords.append(v[i]["coord"])
+        coords: list[BaseGeometry] = []
+        dept = l[0]['stop']
+        dest = l[-1]['stop']
+        for i in range(len(l)):
+            times.append(l[i]["timestamp"])
+            coords.append(shapely.from_wkt(l[i]["coord"]))
         linestring = LineString(coords)
         gdf = geopandas.GeoDataFrame({
-            "geometry": [Point(c) for c in coords],
+            "geometry": coords,
             'timestamp': times,
         })
         gdf['distance'] = [linestring.project(p) for p in gdf['geometry']]
@@ -142,13 +204,68 @@ def generate_stoptimesjson(conn: duckdb.DuckDBPyConnection) -> list[StopTimeList
         merged_gdf['geometry'] = interpolate_coords_with_sentinel(merged_gdf)
         splitted_gdf = merged_gdf[merged_gdf['timestamp'] < 86400]
         if len( splitted_gdf ) != 0:
-            stoptime_dict.append(StopTimeListItem(ts=[int(ts) for ts in splitted_gdf['timestamp']], c=[tuple(p.coords[0]) for p in splitted_gdf['geometry']], dpt=dept, dst=dest))
+            stoptime_dict.append(StopTimeListItem(id=k, ts=[int(ts) for ts in splitted_gdf['timestamp']], c=[tuple(p.coords[0]) for p in splitted_gdf['geometry']], dpt=dept, dst=dest))
         if 1 <= len(after_boundaries):
             for boundary in after_boundaries:
                 splitted_gdf = merged_gdf[boundary <= merged_gdf['timestamp']]
                 if 1 <= len(splitted_gdf):
                     splitted_gdf.loc[:, 'timestamp'] = splitted_gdf['timestamp'] % boundary
-                    stoptime_dict.append(StopTimeListItem(ts=[int(ts) for ts in splitted_gdf['timestamp']], c=[tuple(p.coords[0]) for p in splitted_gdf['geometry']], dpt=dept, dst=dest))
+                    stoptime_dict.append(StopTimeListItem(id=k, ts=[int(ts) for ts in splitted_gdf['timestamp']], c=[tuple(p.coords[0]) for p in splitted_gdf['geometry']], dpt=dept, dst=dest))
+    return stoptime_dict
+
+class Station(TypedDict):
+    id: str
+    code: str
+    name: str
+    stop_seq: int
+
+def get_stop_stations_from_shapeid(conn: duckdb.DuckDBPyConnection, shape: str) -> list[Station]:
+    stations = conn.execute(
+        "SELECT s.stop_id, s.stop_code, s.stop_name, st.stop_sequence FROM trips t JOIN stop_times st ON st.trip_id = t.trip_id JOIN stops s ON s.stop_id = st.stop_id WHERE t.shape_id = ? ORDER BY st.stop_sequence ASC",
+        (shape,)
+    ).fetchall()
+    return [{"id": s[0], "code": s[1], "name": s[2], "stop_seq": s[3]} for s in stations]
+
+def make_shape_geodataframe(conn: duckdb.DuckDBPyConnection, shape_id: str) -> geopandas.GeoDataFrame:
+    """shapeを構成する点1つ1つをGeoJSONのFeatureとして作成し、構成点たちをGeoDataFrameに入れて返す
+    """
+    features = make_shape_point_geojson(conn, shape_id)
+    return geopandas.GeoDataFrame.from_features(features)
+
+def make_shape_point_geojson(conn: duckdb.DuckDBPyConnection, shape_id: str) -> list:
+    """shapeを構成する点1つ1つをGeoJSONのFeatureとして作成し、構成点たちをFeatureのlistとして返す。duckdbからデータを取り出してgeodataframeを生成する場合のヘルパとして使える
+    """
+    shape_points_result = conn.execute(
+        "SELECT shape_id, st_asgeojson(coord) as coord, shape_pt_sequence FROM shapes WHERE shape_id = ?", (shape_id,)).fetchall()
+    features = []
+    for point in shape_points_result:
+        coord = load_str_as_geojson(point[1])
+        feature = {
+            "geometry": coord,
+            "properties": {"shape_id": point[0], "seq": point[2]},
+            "type": "Feature"
+        }
+        features.append(feature)
+    return features
+
+def merge_duplicated_subshape(base_df: pd.DataFrame, df2: pd.DataFrame):
+    """JR貨物のshapeには部分集合を含む場合があり（時刻表上ではA-B間の列車とされているが、実際には途中までA-C間の列車に連結されて輸送され、C-B間は独立して運行される場合がある）、部分集合として別の異なるshapeが合致するものを1つのdataframeに統合する。異なるshapeは既に判明しているものとする
+    """
+    return df2.combine_first(base_df)
+
 def load_str_as_geojson(s: str) -> dict:
     return json.loads(s)
 
+def find_subset_shape(conn: duckdb.DuckDBPyConnection, shape_id: str) -> list[str]:
+    """JR貨物のshapeには部分集合を含む場合があり（時刻表上ではA-B間の列車とされているが、実際には途中までA-C間の列車に連結されて輸送され、C-B間は独立して運行される場合がある）、部分集合として別の異なるshapeで条件に合致するものをlistにして返す
+    """
+    splitted_id = shape_id.split("_")
+    splitted_id_len = len(splitted_id)
+    short_shape_ids = []
+    for l in range(splitted_id_len, 2, -2):
+        if l == splitted_id_len: continue
+        short_shapes = conn.execute("SELECT shape_id FROM shapes WHERE shape_pt_sequence = 1 AND shape_id = ?", ('_'.join(splitted_id[:l]),)).fetchall()
+        if short_shapes is not None:
+            for sh in short_shapes:
+                short_shape_ids.append(sh[0])
+    return short_shape_ids
