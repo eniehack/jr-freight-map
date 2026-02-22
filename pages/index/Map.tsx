@@ -65,16 +65,29 @@ export default function MapComponent() {
     }
   }, []);
 
+  const TripColors: Record<string, Color> = useMemo(() => {
+    return {
+      selected: [86, 89, 58],
+      normal: [0x8a, 0x58, 0x87],
+    };
+  }, []);
+
   const setTripsColor: Accessor<StopTimesJson, Color | Color[]> = useCallback(
     (json: StopTimesJson): Color | Color[] => {
-      console.debug("setTripsColor", json);
       if (selectedTrain && json.id === selectedTrain.id) {
-        return [86, 89, 58];
+        return TripColors.selected;
       }
-      return [0x8a, 0x58, 0x87];
+      return TripColors.normal;
     },
-    [selectedTrain],
+    [TripColors, selectedTrain],
   );
+
+  const stopsFillColor: Record<string, Color> = useMemo(() => {
+    return {
+      selected: [0, 0xff, 0],
+      normal: [0xff, 0xff, 0xff],
+    };
+  }, []);
 
   const setStopsJsonFillColor: Accessor<Feature<Geometry, StopGeoJsonProp>, Color> = useCallback(
     (stops: Feature<Geometry, StopGeoJsonProp>) => {
@@ -82,11 +95,11 @@ export default function MapComponent() {
         selectedTrain &&
         (stops.properties.name === selectedTrain.dpt || stops.properties.name === selectedTrain.dst)
       ) {
-        return [0, 0xff, 0];
+        return stopsFillColor.selected;
       }
-      return [0xff, 0xff, 0xff];
+      return stopsFillColor.normal;
     },
-    [selectedTrain],
+    [selectedTrain, stopsFillColor],
   );
 
   const layers = useMemo<LayersList>(() => {
@@ -113,6 +126,9 @@ export default function MapComponent() {
             visible: 9 < zoomLevel,
           },
         },
+        updateTriggers: {
+          getFillColor: { selectedTrain },
+        },
       }),
     );
     layerArr.push(
@@ -130,26 +146,13 @@ export default function MapComponent() {
         jointRounded: true,
         pickable: true,
         onClick: tripLayerOnClicked,
+        updateTriggers: {
+          getColor: { selectedTrain },
+        },
       }),
     );
     return layerArr;
-  }, [getStationName, setStopsJsonFillColor, zoomLevel, setTripsColor, timestamp, tripLayerOnClicked]);
-
-  const updateTimer = useCallback(
-    () =>
-      setInterval(() => {
-        if (timeSpeed === 0) return;
-        if (86400 <= timeSpeed + timestamp) {
-          setTimeSpeed(0);
-        } else if (86400 < timestamp) {
-          setTimeSpeed(0);
-          setTimestamp(0);
-        } else {
-          setTimestamp((prev) => prev + timeSpeed);
-        }
-      }, 1000),
-    [timeSpeed, timestamp],
-  );
+  }, [getStationName, setStopsJsonFillColor, zoomLevel, setTripsColor, timestamp, tripLayerOnClicked, selectedTrain]);
 
   const setCurrentTime = () => {
     const now = dayjs().unix();
