@@ -5,7 +5,7 @@ import { GeoJsonLayer } from "@deck.gl/layers";
 import { TripsLayer } from "@deck.gl/geo-layers";
 import type { Feature, Geometry, Point } from "geojson";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
@@ -161,10 +161,25 @@ export default function MapComponent() {
     return dayjs().startOf("date").add(timestamp, "second").format("HH:mm");
   };
 
+  const lastUpdateRef = useRef(Date.now());
+
   useEffect(() => {
-    const timer = updateTimer();
-    return () => clearInterval(timer);
-  }, [updateTimer]);
+    if (timeSpeed === 0) return;
+
+    const animate = () => {
+      const now = Date.now();
+      const deltaMs = now - lastUpdateRef.current;
+      lastUpdateRef.current = now;
+      const deltaSeconds = (deltaMs / 1000) * timeSpeed;
+      setTimestamp((prev) => {
+        const next = prev + deltaSeconds;
+        return 86400 <= next ? 0 : next;
+      });
+      animationFrameId = requestAnimationFrame(animate);
+    };
+    let animationFrameId = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animationFrameId);
+  }, [timeSpeed]);
 
   return (
     <>
