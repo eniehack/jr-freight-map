@@ -1,8 +1,9 @@
-import { MapViewState, DeckProps, LayersList, PickingInfo, LayerProps, Accessor, Color } from "@deck.gl/core";
+import { MapViewState, DeckProps, PickingInfo, LayerProps, Accessor, Color, MapView } from "@deck.gl/core";
 import { MapboxOverlay } from "@deck.gl/mapbox";
 import { Map, useControl, AttributionControl } from "react-map-gl/maplibre";
 import { GeoJsonLayer } from "@deck.gl/layers";
 import { TripsLayer } from "@deck.gl/geo-layers";
+import { DeckGL } from "@deck.gl/react";
 import type { Feature, Geometry, Point } from "geojson";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -102,58 +103,6 @@ export default function MapComponent() {
     [selectedTrain, stopsFillColor],
   );
 
-  const layers = useMemo<LayersList>(() => {
-    const layerArr = [];
-    layerArr.push(
-      new GeoJsonLayer<StopGeoJsonProp>({
-        id: "station-layer",
-        data: `${import.meta.env.BASE_URL}stops.json`,
-        pointType: "circle+text",
-        getText: getStationName,
-        textCharacterSet: "auto",
-        textFontFamily: "Noto Sans JP",
-        getTextSize: 16,
-        getTextPixelOffset: [0, 30],
-        getTextAlignmentBaseline: "bottom",
-        getPointRadius: 4,
-        pointRadiusMaxPixels: 5,
-        pointRadiusMinPixels: 5,
-        filled: true,
-        getFillColor: setStopsJsonFillColor,
-        getTextColor: [0xff, 0xff, 0xff],
-        _subLayerProps: {
-          "points-text": {
-            visible: 9 < zoomLevel,
-          },
-        },
-        updateTriggers: {
-          getFillColor: { selectedTrain },
-        },
-      }),
-    );
-    layerArr.push(
-      new TripsLayer<StopTimesJson>({
-        id: "trips",
-        data: `${import.meta.env.BASE_URL}stop_times.json`,
-        getPath: (d: StopTimesJson) => d.c,
-        getTimestamps: (d: StopTimesJson) => d.ts,
-        opacity: 0.6,
-        widthMinPixels: 6,
-        getColor: setTripsColor,
-        currentTime: timestamp,
-        //trailLength: 300,
-        capRounded: true,
-        jointRounded: true,
-        pickable: true,
-        onClick: tripLayerOnClicked,
-        updateTriggers: {
-          getColor: { selectedTrain },
-        },
-      }),
-    );
-    return layerArr;
-  }, [getStationName, setStopsJsonFillColor, zoomLevel, setTripsColor, timestamp, tripLayerOnClicked, selectedTrain]);
-
   const setCurrentTime = () => {
     const now = dayjs().unix();
     const startOfToday = dayjs().startOf("date").unix();
@@ -187,20 +136,65 @@ export default function MapComponent() {
   return (
     <>
       <div className="absolute h-full w-full top-0 left-0">
-        <Map
-          initialViewState={INITIAL_VIEW_STATE}
-          mapStyle={`${import.meta.env.BASE_URL}style.json`}
-          //mapStyle="https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"
-          reuseMaps
-          attributionControl={false}
-          id="map"
-        >
-          <AttributionControl
-            compact={true}
-            customAttribution="© <a href='https://ckan.odpt.org/dataset/jrfreight_container'>JR貨物・国土交通省・公共交通オープンデータ協議会</a>"
+        <DeckGL initialViewState={INITIAL_VIEW_STATE} controller getTooltip={getTooltip}>
+          <GeoJsonLayer
+            id="station-layer"
+            data={`${import.meta.env.BASE_URL}stops.json`}
+            pointType="circle+text"
+            getText={getStationName}
+            textCharacterSet="auto"
+            textFontFamily="Noto Sans JP"
+            getTextSize={16}
+            getTextPixelOffset={[0, 30]}
+            getTextAlignmentBaseline="bottom"
+            getPointRadius={4}
+            pointRadiusMaxPixels={5}
+            pointRadiusMinPixels={5}
+            filled={true}
+            getFillColor={setStopsJsonFillColor}
+            getTextColor={[0xff, 0xff, 0xff]}
+            _subLayerProps={{
+              "points-text": {
+                visible: 9 < zoomLevel,
+              },
+            }}
+            updateTriggers={{
+              getFillColor: { selectedTrain },
+            }}
           />
-          <DeckGLOverlay controller={true} layers={layers} getTooltip={getTooltip} />
-        </Map>
+          <TripsLayer
+            id="trips"
+            data={`${import.meta.env.BASE_URL}stop_times.json`}
+            getPath={(d: StopTimesJson) => d.c}
+            getTimestamps={(d: StopTimesJson) => d.ts}
+            opacity={0.6}
+            widthMinPixels={6}
+            getColor={setTripsColor}
+            currentTime={timestamp}
+            //trailLength={300}
+            capRounded={true}
+            jointRounded={true}
+            pickable={true}
+            onClick={tripLayerOnClicked}
+            updateTriggers={{
+              getColor: { selectedTrain },
+            }}
+          />
+          <MapView id="map" controller>
+            <Map
+              mapStyle={`${import.meta.env.BASE_URL}style.json`}
+              //mapStyle="https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"
+              reuseMaps
+              attributionControl={false}
+              id="map"
+            >
+              <AttributionControl
+                compact={true}
+                customAttribution="© <a href='https://ckan.odpt.org/dataset/jrfreight_container'>JR貨物・国土交通省・公共交通オープンデータ協議会</a>"
+              />
+            </Map>
+          </MapView>
+        </DeckGL>
       </div>
       {isPanelOpened && selectedTrain !== null && (
         <div
