@@ -221,10 +221,7 @@ export default function MapComponent() {
       )}
       <div className="absolute z-10 bottom-2 left-1 bg-white p-4 rounded-md">
         <p>
-          時刻:{" "}
-          <span>
-            {humanizedTime}({timestamp})
-          </span>
+          時刻: <span>{humanizedTime}</span>
         </p>
         <select
           defaultValue={1}
