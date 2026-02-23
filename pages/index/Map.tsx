@@ -223,12 +223,7 @@ export default function MapComponent() {
         <p>
           時刻: <span>{humanizedTime}</span>
         </p>
-        <select
-          defaultValue={1}
-          id="timespeed"
-          value={timeSpeed}
-          onChange={(event) => setTimeSpeed(Number(event.target.value))}
-        >
+        <select id="timespeed" value={timeSpeed} onChange={(event) => setTimeSpeed(Number(event.target.value))}>
           {[
             { value: 1, text: "1倍" },
             { value: 60, text: "60倍" },
