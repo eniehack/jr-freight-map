@@ -23,10 +23,10 @@
     "@eslint/js": "^9.24.0",
     "@tailwindcss/vite": "^4.1.18",
     "@types/geojson": "^7946.0.16",
-    "@types/node": "^20",
+    "@types/node": "^22.19.11",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@vitejs/plugin-react-swc": "^3.10.0",
+    "@vitejs/plugin-react-swc": "^4.2.3",
     "dayjs": "^1.11.19",
     "deck.gl": "^9.2.8",
     "eslint": "^9",
@@ -43,7 +43,7 @@
     "typescript-eslint": "^8.56.0",
     "vike": "^0.4.253",
     "vike-react": "^0.6.20",
-    "vite": "^6.3.5"
+    "vite": "^7.3.1"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
