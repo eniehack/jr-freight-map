@@ -5,7 +5,7 @@ import { GeoJsonLayer } from "@deck.gl/layers";
 import { TripsLayer } from "@deck.gl/geo-layers";
 import type { Feature, Geometry, Point } from "geojson";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
@@ -74,7 +74,7 @@ export default function MapComponent() {
 
   const setTripsColor: Accessor<StopTimesJson, Color | Color[]> = useCallback(
     (json: StopTimesJson): Color | Color[] => {
-      if (selectedTrain && json.id === selectedTrain.id) {
+      if (json.id === selectedTrain?.id) {
         return TripColors.selected;
       }
       return TripColors.normal;
@@ -164,15 +164,15 @@ export default function MapComponent() {
     return dayjs().startOf("date").add(timestamp, "second").format("HH:mm");
   };
 
-  const lastUpdateRef = useRef(Date.now());
+  const [lastUpdate, setLastUpdate] = useState(() => Date.now());
 
   useEffect(() => {
     if (timeSpeed === 0) return;
 
     const animate = () => {
       const now = Date.now();
-      const deltaMs = now - lastUpdateRef.current;
-      lastUpdateRef.current = now;
+      const deltaMs = now - lastUpdate;
+      setLastUpdate(now);
       const deltaSeconds = (deltaMs / 1000) * timeSpeed;
       setTimestamp((prev) => {
         const next = prev + deltaSeconds;
@@ -182,7 +182,7 @@ export default function MapComponent() {
     };
     let animationFrameId = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(animationFrameId);
-  }, [timeSpeed]);
+  }, [lastUpdate, timeSpeed]);
 
   return (
     <>
