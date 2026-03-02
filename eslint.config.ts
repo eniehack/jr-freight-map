@@ -50,7 +50,7 @@ export default [
   {
     files: ["**/*.{js,mjs,cjs,jsx,mjsx,ts,tsx,mtsx}"],
     ...react.configs.flat.recommended,
-    ...reactHooks.configs["recommended-latest"],
+    ...reactHooks.configs.flat.recommended,
     languageOptions: {
       ...react.configs.flat.recommended.languageOptions,
       globals: {
