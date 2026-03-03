@@ -20,7 +20,7 @@
     "@deck.gl/layers": "^9.2.8",
     "@deck.gl/mapbox": "^9.2.8",
     "@deck.gl/react": "^9.2.8",
-    "@eslint/js": "^9.24.0",
+    "@eslint/js": "^10.0.1",
     "@tailwindcss/vite": "^4.1.18",
     "@types/geojson": "^7946.0.16",
     "@types/node": "^22.19.11",
@@ -29,7 +29,7 @@
     "@vitejs/plugin-react-swc": "^4.2.3",
     "dayjs": "^1.11.19",
     "deck.gl": "^9.2.8",
-    "eslint": "^9",
+    "eslint": "^10",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.0.1",
@@ -48,6 +48,10 @@
   "pnpm": {
     "onlyBuiltDependencies": [
       "@swc/core"
-    ]
+    ],
+    "overrides": {
+      "fast-xml-parser": "^4.5.4",
+      "eslint-plugin-react>minimatch": "^3.1.5"
+    }
   }
 }
