@@ -15,11 +15,11 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "@deck.gl/core": "^9.2.8",
-    "@deck.gl/geo-layers": "^9.2.8",
-    "@deck.gl/layers": "^9.2.8",
-    "@deck.gl/mapbox": "^9.2.8",
-    "@deck.gl/react": "^9.2.8",
+    "@deck.gl/core": "^9.2.11",
+    "@deck.gl/geo-layers": "^9.2.11",
+    "@deck.gl/layers": "^9.2.11",
+    "@deck.gl/mapbox": "^9.2.11",
+    "@deck.gl/react": "^9.2.11",
     "@eslint/js": "^10.0.1",
     "@tailwindcss/vite": "^4.1.18",
     "@types/geojson": "^7946.0.16",
@@ -28,7 +28,7 @@
     "@types/react-dom": "^19",
     "@vitejs/plugin-react-swc": "^4.2.3",
     "dayjs": "^1.11.19",
-    "deck.gl": "^9.2.8",
+    "deck.gl": "^9.2.11",
     "eslint": "^10",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-react": "^7.37.5",
@@ -41,8 +41,8 @@
     "tailwindcss": "^4",
     "typescript": "^5",
     "typescript-eslint": "^8.56.1",
-    "vike": "^0.4.253",
-    "vike-react": "^0.6.20",
+    "vike": "^0.4.255",
+    "vike-react": "^0.6.21",
     "vite": "^7.3.1"
   },
   "pnpm": {
