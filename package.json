@@ -27,7 +27,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitejs/plugin-react-swc": "^4.2.3",
-    "dayjs": "^1.11.19",
+    "dayjs": "^1.11.20",
     "deck.gl": "^9.2.11",
     "eslint": "^10",
     "eslint-config-prettier": "^10.1.8",
