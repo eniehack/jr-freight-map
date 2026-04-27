@@ -27,7 +27,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitejs/plugin-react-swc": "^4.3.0",
-    "dayjs": "^1.11.19",
+    "dayjs": "^1.11.20",
     "deck.gl": "^9.2.11",
     "eslint": "^10",
     "eslint-config-prettier": "^10.1.8",
@@ -41,7 +41,7 @@
     "tailwindcss": "^4",
     "typescript": "^5",
     "typescript-eslint": "^8.56.1",
-    "vike": "^0.4.255",
+    "vike": "^0.4.258",
     "vike-react": "^0.6.21",
     "vite": "^8.0.10"
   },
