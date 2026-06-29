@@ -6,7 +6,7 @@ authors = [
     { name = "Nakaya", email = "eniehack@outlook.jp" }
 ]
 dependencies = [
-    "duckdb>=1.2.2",
+    "duckdb>=1.5.4",
     "geopandas>=1.0.1",
     "tqdm>=4.67.1",
 ]
